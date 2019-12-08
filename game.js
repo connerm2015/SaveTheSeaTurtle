@@ -1,34 +1,23 @@
-var cvs = document.getElementById("canvas");
-var ctx = cvs.getContext("2d");
-
-// load images
-
-var turtle = new Image();
-var bg = new Image();
-var fg = new Image();
-
-
-
-
-turtle.src = "images/turtle.png";
-bg.src = "images/bg.png";
-shark.src = "images/shark.png";
-jellyfish.src = "images/jellyfish.png";
-bag.src = "images/bag.png";
-can.src = "images/can.png";
-straw.src = "images/straw.png";
-net.src = "images/net.png";
-
-
-// some variables
-
-
+var ctx;
+var imgBg;
+var imgDrops;
+var x = 0;
+var y = 0;
+var amt = 5;
+var enemy = [];
 var bX = 10;
 var bY = 150;
-
 var gravity = 2;
-
 var score = 0;
+
+//images
+imgBg = new Image();
+var turtle = new Image();
+
+turtle.src = "images/turtle.png";
+
+images = ["images/shark.png", "images/net.png", "images/can.png", "images/jellyfish.png", "images/bag.png", "images/straw.png"];
+index = Math.floor(Math.random()*7);
 
 // audio files
 var up = false;
@@ -42,12 +31,7 @@ var scor = new Audio();
 fly.src = "sounds/fly.mp3";
 scor.src = "sounds/score.mp3";
 
-
-
-var gap = 150;
-
-// on key down
-
+//move up
 document.addEventListener("keydown",moveUp);
 
 function moveUp(){
@@ -55,89 +39,64 @@ function moveUp(){
     fly.play();
 }
 
-// enemy coordinates
 
-var enemy = [];
-
-enemy[0] = {
-    x : cvs.width,
-    y : 0
-};
-
-var images = [shark,jellyfish,bag,can,straw,net];
-
-var shark = new Image();
-var jellyfish = new Image();
-var bag = new Image();
-var can = new Image();
-var straw = new Image();
-var net = new Image();
+function drawBackground(){
+    ctx.drawImage(imgBg, 0, 0); //Background
+}
 
 
-
-// draw images
-
-function draw(){
-
-    //draws bg to canvas
-    ctx.drawImage(bg,0,0);
-    
-
-
-    for(var i = 0; i < enemy.length; i++){
-
-        constant = shark.height+gap;
-        ctx.drawImage(shark,enemy[i].x,enemy[i].y);
-        ctx.drawImage(jellyfish,enemy[i].x,enemy[i].y+constant);
-
-
-        enemy[i].lefta;
-
-
-        enemy.prototype.update = function(playerX, playerY) {
-            // Rotate us to face the player
-            this.rotation = Math.atan2(playerY - this.y, playerX - this.x);
-
-            // Move towards the player
-            this.x += Math.cos(this.rotation) * this.speed;
-            this.y += Math.sin(this.rotation) * this.speed;
-        }
-
-        if( enemy[i].x == 300 ){
-            enemy.push({
-                x : cvs.width,
-                y : Math.floor(Math.random()*shark.height)-shark.height,
-            });
-        }
-
-        // detect collision
-
-        if( bX + turtle.width >= enemy[i].x && bX <= enemy[i].x + shark.width && (bY <= enemy[i].y + shark.height || bY+turtle.height >= enemy[i].y+constant) || bY + turtle.height >=  cvs.height - fg.height){
-            location.reload(); // reload the page
-        }
-
-        if(enemy[i].x == 5){
-            score++;
-            scor.play();
-        }
-
-
-
-
-    }
-
+function draw() {
+    drawBackground();
     //draws the turtle to canvas
     ctx.drawImage(turtle,bX,bY);
 
+
+
+    for (var i=0; i < amt; i++){
+
+        ctx.drawImage (enemy[i].image, enemy[i].x, enemy[i].y); //The rain drop
+
+        enemy[i].x += enemy[i].speed; //Set the falling speed
+
+        if (enemy[i].x <0)  {  //Repeat the raindrop when it falls out of view
+            enemy[i].x = 500 //Account for the image size
+            enemy[i].y = Math.random() * 600;    //Make it appear randomly along the width
+        }
+    }
+
     bY += gravity;
 
-    //score count
-    ctx.fillStyle = "#000";
-    ctx.font = "20px Verdana";
-    ctx.fillText("Score : "+score,10,cvs.height-20);
+    // //score count
+    // ctx.fillStyle = "#000";
+    // ctx.font = "20px Verdana";
+    // ctx.fillText("Score : "+score,10,cvs.height-20);
 
-    requestAnimationFrame(draw);
+    // requestAnimationFrame(draw);
 
 }
 
-draw();
+function setup() {
+    var canvas = document.getElementById('canvas');
+
+    if (canvas.getContext) {
+        ctx = canvas.getContext('2d');
+        imgBg.src = "images/bg.png";
+
+        setInterval(draw, 40);
+        for (var i = 0; i < images.length; i++) {
+            var fallingDr = new Object();
+            fallingDr["image"] =  new Image();
+
+
+            //randomizes images
+            fallingDr.image.src = (images[i]);
+            
+            //falls to random points on x and y axis
+            fallingDr["x"] = 600;
+            fallingDr["y"] = Math.random() * 1000;
+            fallingDr["speed"] = -2 - Math.random() * 4;
+            enemy.push(fallingDr);
+        }
+    }
+}
+setup();
